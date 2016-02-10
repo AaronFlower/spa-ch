@@ -262,6 +262,9 @@ spa.shell = (function () {
 		$.uriAnchor.configModule( {
 			schema_map: configMap.anchor_schema_map 
 		 });
+		// config and initialize feature modules
+		spa.chat.configModule( {} );
+		spa.chat.initModule( jqueryMap.$chat );
 		// 当一切都加载完成后，为window绑定 hashchange事件并触发。
 		$(window) 
 			.bind( 'hashchange', onHashChange )
