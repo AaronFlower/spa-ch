@@ -41,3 +41,16 @@ Shell渲染并管理着功能容器。
     *  根据比较确定的结果，尝试更改需要修改的应用部分。
     *  如果不能处理请求的变化，则保持当前状态，并恢复锚，以便和状态匹配。
  
+###V4.0
+将chat功能模块完全从shell模块分离出来实现。
+主要应用的开发模式是：FMVC( Fractal MVC)。设计的架构是，
+1. Shell 可以调用单页应用中的任何子模块。
+2. 功能模块只调用共享的公用模块。
+3. 功能模块之间的相互调用是不允许的。
+4. 功能模块的唯一数据源或者功能只能来自Shell，在配置和初始化期间以参数的形式会给模块的公开方法。
+#### 设计方法API
+我们希望一直由URI 锚来驱动页面状态，而不是倒过来。
+1. Chat配置API spa.chat.configModule();
+2. Chat初始化API spa.chat.initModule();
+3. Chat的setSliderPosition API sap.chat.setSliderPosition();
+
