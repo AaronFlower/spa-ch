@@ -13,7 +13,7 @@
 	border-radius: 0.5em 0 0 0;
 	border-style: solid;
 	border-width: thin 0 0 thin;
-	background-color: #888;
+	border-color: #888;
 	box-shadow: 0 0 0.75em 0 #888;
 	z-index: 1;
 }
@@ -96,7 +96,7 @@
 
 .spa-chat-box input[type=text] {
 	float: left;
-	width: 25%;
+	width: 75%;
 	height: 2em;
 	padding: 0.5em;
 	border: 0;

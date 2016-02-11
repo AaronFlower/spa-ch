@@ -208,7 +208,7 @@ spa.chat = (function () {
 	configModule = function( input_map ) {
 		spa.util.setConfigModule( {
 			input_map: input_map,
-			settable_map: configModule.settable_map, 
+			settable_map: configMap.settable_map, 
 			config_map: configMap 
 		});
 			return true;
@@ -237,7 +237,7 @@ spa.chat = (function () {
 		// initialize chat slider to default title and state
 		jqueryMap.$toggle.prop( 'title', configMap.slider_closed_title );
 		jqueryMap.$head.click( onClickToggle );
-		stateMap.position_type = closed;
+		stateMap.position_type = 'closed';
 
 		return true;
 	};

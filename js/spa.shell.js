@@ -10,7 +10,7 @@ spa.shell = (function () {
 	var 
 		configMap = {
 			anchor_schema_map : {	// anchor可以设置值的集合。
-				chat : { open : true , closed : true } 
+				chat : { opened : true , closed : true } 
 			},
 			main_html : String() 
 						+ '<div id="spa">'
@@ -24,7 +24,6 @@ spa.shell = (function () {
 						+ '		<div class="spa-shell-main-content"></div>'
 						+ '	</div>'
 						+ '	<div class="spa-shell-foot"></div>'
-						+ '	<div class="spa-shell-chat"></div>'
 						+ '	<div class="spa-shell-modal"></div>'
 						+ '</div>',
 			chat_extend_time 	: 300,
@@ -37,15 +36,13 @@ spa.shell = (function () {
 		//下面的变量多是在后面进行赋值。
 		// 将在整个模块中共享的动态信息放在stateMap变量中。
 		stateMap = { 
-			$container : null,
 			anchor_map : { },
-			is_chat_retracted : true 
 		}, 
 		jqueryMap = { }, // 将jQuery集合缓存在jqueryMap中。
 
-		copyAnchorMap, setJqueryMap, toggleChat,
-		changeAnchorPart, onHashChange, 
-		onClickChat, initModule;
+		copyAnchorMap, 		setJqueryMap,
+		changeAnchorPart, 	onHashChange, 
+		setChatAnchor, 		initModule;
 	// ------- End 	 Module Scope Variables
 
 	// --------- Begin Utility Methods--------- 
@@ -60,67 +57,9 @@ spa.shell = (function () {
 		var $container = stateMap.$container;
 		jqueryMap = { 
 			$container 	: $container ,
-			$chat 		: $container.find( '.spa-shell-chat' )
 		};
 	};
 
-	// Begin DOM Method / toggleChat /
-	// Purpose 	: Extends or retracts chat slider
-	// Arguments:
-	// 		* do_extend - if true, extends slider; if false retracts
-	// 		* callback 	- optional function to execute at end of animation
-	// Settings:
-	// 		* chat_extend_time, chat_retract_time,
-	// 		* chat_extend_height, chat_retract_height
-	// 	Returns:
-	// 		* true - slider animation activated
-	// 		* false - slider animation not activated
-	// State 	: sets stateMap.is_chat_retracted
-	// 		* true 	- slider is retracted
-	// 		* false - slider is extended
-	toggleChat = function ( do_extend, callback ) {
-		var 
-			px_chat_ht = jqueryMap.$chat.height(),
-			is_open 	= px_chat_ht === configMap.chat_extend_height,
-			is_closed 	= px_chat_ht === configMap.chat_retract_height,
-			is_sliding  = ! is_open && ! is_closed ;
-
-		// avoid race condition
-		if( is_sliding ) { return false; } 
-
-		// Begin extend chat slider 
-		if( do_extend ){
-			jqueryMap.$chat.animate( 
-				{ height : configMap.chat_extend_height },
-				configMap.chat_extend_time ,
-				function ( ) {
-					jqueryMap.$chat.attr( 'title', configMap.chat_extend_title );
-					stateMap.is_chat_retracted = false ;
-					if( callback ){
-						callback( jqueryMap.$chat );
-					}
-				}
-			);
-			return true;
-		}
-		// End extend chat slider
-		
-		// Begin retract chat slider 
-		jqueryMap.$chat.animate(
-			{ height : configMap.chat_retract_height },
-			configMap.chat_retract_time,
-			function ( ) {
-				jqueryMap.$chat.attr( 'title', configMap.chat_retract_title );
-				stateMap.is_chat_retracted = true;
-				if( callback ){
-					callback( jqueryMap.$chat );
-				}
-			}
-		);
-		return true;
-		// End retract chat slider
-	};
-	// End DOM method /toggleChat/
 	// ------------- Begin Dom Method ( changeAnchorPart ) -----------
 	// Purpose 	 : 更改URI 锚组件的部分内容。
 	// Arguments :
@@ -192,11 +131,12 @@ spa.shell = (function () {
 	// 		* 根据当前状态和新的锚表示的状态作比较，如果不同则尝试更改应用部分。
 	// 		* 如果不能处理请求的变化，则保持当前的状态，并恢复锚，以便和状态匹配。
 	onHashChange = function ( event ) {
-		var 
-			anchor_map_previous = copyAnchorMap( ),
-			anchor_map_proposed,
-			_s_chat_previous, _s_chat_proposed,
-			s_chat_proposed ;
+		var
+			_s_chat_previous, _s_chat_proposed, s_chat_proposed,
+			anchor_map_proposed, 
+			is_ok = true, 
+			anchor_map_previous = copyAnchorMap( )
+		;
 		// Attempt to parse anchor
 		try{
 			anchor_map_proposed = $.uriAnchor.makeAnchorMap( );
@@ -214,57 +154,79 @@ spa.shell = (function () {
 		if( !anchor_map_previous || _s_chat_proposed !== _s_chat_previous ){
 			s_chat_proposed = anchor_map_proposed.chat ;
 			switch(s_chat_proposed){
-				case 'open' :
-					toggleChat( true );
+				case 'opened' :
+					is_ok = spa.chat.setSliderPosition( 'opened' );
 					break;
 				case 'closed' :
-					toggleChat( false );
+					is_ok = spa.chat.setSliderPosition( 'closed' );
 					break;
 				default :
-					toggleChat( false );
+					spa.chat.setSliderPosition( 'closed' );
 					delete anchor_map_proposed.chat;
 					$.uriAnchor.setAnchor( anchor_map_proposed, null, true );
+			}
+		}
+
+		// Begin revert anchor if slider change denied
+		if( ! is_ok ){
+			if( anchor_map_previous ){
+				$.uriAnchor.setAnchor( anchor_map_previous, null, true );
+				stateMap.anchor_map = anchor_map_previous;
+			}else{
+				delete anchor_map_proposed.chat;
+				$.uriAnchor.setAnchor( anchor_map_proposed, null, true );
 			}
 		}
 
 		return false;
 	};
 	// End event handler /onHashChange/
-
-	// Begin event handler /onClickChat/
-	onClickChat = function ( event ) {
-		// 将应用状态当前历史事件来记录，并记录天anchor中。
-		// 单击是为了变更应用的状态，但是应用了锚之后的逻辑是这样的：
-		// 		* 先去变更锚（ changeAnchorPart ）
-		// 		* 变更锚后自然会触发( onHashChange )事件
-		// 		* onHashchange事件会根据锚的状态来更新应用的状态。
-		changeAnchorPart( {
-			chat : ( stateMap.is_chat_retracted ? 'open' : 'closed' )
-		});
-		return false;
-	};
-	// End event handler /onClickChat/
 	//--------- End   Event Handlers --------
+
+	//--------------- BEGIN CALLBACKS -----------
+	// Begin callback method /setChatAnchor/
+	// Example 	: setChatAnchor( 'closed' )
+	// Purpose 	: Change the chat component of the anchor
+	// Arguments:
+	// 	* position_type - emum( 'opened', 'closed')
+	// Action 	:
+	// 	Changes the URI anchor parameter 'chat' to the requested value if possible.
+	// Returns 
+	// 	* true 	- requested anchor part was updated
+	// 	* false - requested anchor part was not updated.
+	// Throws 	: none;
+	setChatAnchor = function( position_type ) {
+		return changeAnchorPart( { chat : position_type } );
+	};
+	// End callback method /setChatAnchor/
+	//--------------- END   CALLBACKS -----------
 
 	//------------ Begin Public Methods -------
 	//------------ Begin public method /initModule/
+	// Example 	: spa.shell.initModule( $('#app_div_id' ) )
+	// Purpose 	: Directs the shell to offer its capability to the user 
+	// Arguments: 
+	// 	* container - ( example : $( '#app_div_id' ) )
+	// Action	:
+	// 	Populates $container with the shell of the UI and then cofigures and initializes
+	// 	feature modules. The shell is alse responsible for browser-wide issues such as
+	// 	URI anchor and cookie management.
+	// Returns 	: none;
+	// Throws 	: none;
 	initModule = function ( $container ) {
 		stateMap.$container = $container;
 		$container.html( configMap.main_html );	
 		setJqueryMap();
 
-		// initialize chat slider and bind click handler
-		configMap.is_chat_retracted = true;
-		jqueryMap.$chat
-			.attr( 'title', configMap.chat_retract_title )
-			.click( onClickChat );
 		// 初始化配置 锚 模式集合
 		$.uriAnchor.configModule( {
 			schema_map: configMap.anchor_schema_map 
 		 });
 		// config and initialize feature modules
-		spa.chat.configModule( {} );
-		spa.chat.initModule( jqueryMap.$chat );
+		spa.chat.configModule( {
+			set_chat_anchor 	: setChatAnchor
+		} );
+		spa.chat.initModule( jqueryMap.$container );
 		// 当一切都加载完成后，为window绑定 hashchange事件并触发。
 		$(window) 
 			.bind( 'hashchange', onHashChange )
