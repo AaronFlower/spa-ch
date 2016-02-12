@@ -258,8 +258,11 @@ spa.chat = (function () {
 		// unwind initialization and state
 		// remove DOM container; this removes event bindings too.
 		if( jqueryMap.$slider ){
-			jqueryMap.$slider.remove( );
-			jqueryMap = {};
+			// jqueryMap.$slider.remove( );
+			jqueryMap.$slider.hide( 'slow', function(){ 
+				jqueryMap.$slider.remove();
+				jqueryMap = {};
+			} );
 		}
 		stateMap.$append_target = null;
 		stateMap.position_type 	= 'closed';
