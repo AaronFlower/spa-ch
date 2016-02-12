@@ -40,8 +40,10 @@ spa.chat = (function () {
 
 			slider_open_time 		: 250,
 			slider_close_time 		: 250,
-			slider_opened_em 		: 16,
+			slider_opened_em 		: 18,
 			slider_closed_em 		: 2,
+			slider_opened_min_em 	: 10,
+			window_height_min_em 	: 20, 	// 浏览器窗口最小高度。
 			slider_opened_title 	: 'Click to close',
 			slider_closed_title 	: 'Click to open',
 
@@ -91,18 +93,24 @@ spa.chat = (function () {
 	};
 
 	setPxSizes = function() {
-		var px_per_em, open_height_em ;
+		var px_per_em, window_height_em, opened_height_em ;
 
 		//.spa-chat的默认font-size的大于是多少像素等于1em, 由getEmSize计算得到 ppe.
 		px_per_em = getEmSize( jqueryMap.$slider.get(0) );
+		window_height_em = Math.foor(
+			( $(window).height( ) / px_per_em ) + 0.5
+		);
 
-		open_height_em = configMap.slider_opened_em;
+		opened_height_em 
+			= window_height_em > configMap.window_height_min_em 
+			? configMap.slider_opened_em
+			: configMap.slider_opened_min_em ; 
 
 		stateMap.px_per_em = px_per_em;
 		stateMap.slider_closed_px = configMap.slider_closed_em * px_per_em;
-		stateMap.slider_opened_px = open_height_em * px_per_em;
+		stateMap.slider_opened_px = opened_height_em * px_per_em;
 		jqueryMap.$sizer.css( {
-			height: ( open_height_em -2 ) * px_per_em
+			height: ( opened_height_em -2 ) * px_per_em
 		});
 	};
 
@@ -276,6 +284,32 @@ spa.chat = (function () {
 	};
 	// End 	 public method /removeSlider/
 
+	// Begin Public method /handleResize/
+	// Purpose 	: 
+	// 	Given a window resize event, adjust the presentation
+	// 	provided by this module if needed.
+	// Action 	:
+	// 	If the window height or width falls below a given threshold,
+	// 	resize the chat slider for the reduced window size.
+	// Returns 	:
+	// 	* false - resize not considered
+	// 	* true 	- resize considered
+	// Throws 	: none
+	// 	
+	handleResize = function() {
+		// don't do anything if we don't have a slider container.
+		if( ! jqueryMap.$slider ){
+			return false;
+		}
+		// 通过setPxSizes() 每次设置用到的全局变量。
+		setPxSizes( ); 	// 每次调用 handleResize方法时,重新计算像素尺寸。
+		if( stateMap.position_type === 'opened' ){
+			jqueryMap.$slider.css( { height : stateMap.slider_opened_px } );
+		}
+		return true;
+	};
+	// End Public method /handleResize/
+	
 	// Return public methods
 	return {
 		setSliderPosition 	: setSliderPosition,
