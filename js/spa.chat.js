@@ -97,7 +97,7 @@ spa.chat = (function () {
 
 		//.spa-chat的默认font-size的大于是多少像素等于1em, 由getEmSize计算得到 ppe.
 		px_per_em = getEmSize( jqueryMap.$slider.get(0) );
-		window_height_em = Math.foor(
+		window_height_em = Math.floor(
 			( $(window).height( ) / px_per_em ) + 0.5
 		);
 

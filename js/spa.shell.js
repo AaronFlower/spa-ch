@@ -31,17 +31,19 @@ spa.shell = (function () {
 			chat_extend_height 	: 450,
 			chat_retract_height : 15,
 			chat_extend_title 	: 'Click to retract',
-			chat_retract_title 	: 'Click to extend'
+			chat_retract_title 	: 'Click to extend' ,
+			resize_interval 	: 200
 		},
 		//下面的变量多是在后面进行赋值。
 		// 将在整个模块中共享的动态信息放在stateMap变量中。
 		stateMap = { 
 			anchor_map : { },
+			resize_idto : undefined
 		}, 
 		jqueryMap = { }, // 将jQuery集合缓存在jqueryMap中。
 
 		copyAnchorMap, 		setJqueryMap,
-		changeAnchorPart, 	onHashChange, 
+		changeAnchorPart, 	onHashChange, onResize, 
 		setChatAnchor, 		initModule;
 	// ------- End 	 Module Scope Variables
 
@@ -181,6 +183,25 @@ spa.shell = (function () {
 		return false;
 	};
 	// End event handler /onHashChange/
+	// Begind event handler /onResize/
+	onResize = function( ) {
+		// 只要当前没有尺寸调整计时器在运作，就运行onResize的逻辑。
+		if( stateMap.resize_idto ){
+			return true;
+		}
+
+		spa.chat.handleResize( );
+		stateMap.resize_idto = setTimeout(
+			function ( ) {
+				stateMap.resize_idto = undefined;
+			},
+			configMap.resize_interval
+		);
+
+		// 返回true,这样jQuery就不会调用preventDefault()或才stopPropagation()函数了。
+		return true;
+	};
+	// End 	  event handler /onResize/
 	//--------- End   Event Handlers --------
 
 	//--------------- BEGIN CALLBACKS -----------
@@ -229,6 +250,7 @@ spa.shell = (function () {
 		spa.chat.initModule( jqueryMap.$container );
 		// 当一切都加载完成后，为window绑定 hashchange事件并触发。
 		$(window) 
+			.bind( 'resize', onResize )
 			.bind( 'hashchange', onHashChange )
 			.trigger( 'hashchange' );
 
