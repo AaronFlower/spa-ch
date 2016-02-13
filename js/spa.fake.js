@@ -12,7 +12,7 @@ spa.fake = (function () {
 		return [
 			{
 				name	: 'Setty',
-				id 		: 'id_01', 
+				_id 	: 'id_01', 
 				css_map : {
 					top : 20,
 					left:20,
@@ -21,7 +21,7 @@ spa.fake = (function () {
 			},			
 			{
 				name	: 'Mike',
-				id 		: 'id_02', 
+				_id 	: 'id_02', 
 				css_map : {
 					top : 60,
 					left:20,
@@ -29,7 +29,7 @@ spa.fake = (function () {
 				}
 			},			{
 				name	: 'Pebbles',
-				id 		: 'id_03', 
+				_id 	: 'id_03', 
 				css_map : {
 					top : 100,
 					left:20,
@@ -37,7 +37,7 @@ spa.fake = (function () {
 				}
 			},			{
 				name	: 'Wilam',
-				id 		: 'id_04', 
+				_id 	: 'id_04', 
 				css_map : {
 					top : 140,
 					left:20,

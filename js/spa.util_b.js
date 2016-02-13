@@ -20,12 +20,12 @@ spa.util_b = (function () {
 			},
 			html_encode_noamp_map 	: {}
 		},
-		decodeHtml, encodeHtml, getEmSize 
+		decodeHtml, decodeHtml_, encodeHtml, encodeHtml_, getEmSize 
 	;
 
 	// html_encode_noamp_map 由 html_encode_map 创建，但是要删除['&']
-	html_encode_noamp_map = $.extend( {}, configMap.html_encode_map );
-	delete html_encode_noamp_map['&'];
+	configMap.html_encode_noamp_map = $.extend( {}, configMap.html_encode_map );
+	delete configMap.html_encode_noamp_map['&'];
 
 	// ------------ End   Module Scope Variables ----------
 
