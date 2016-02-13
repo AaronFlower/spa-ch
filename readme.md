@@ -54,3 +54,10 @@ Shell渲染并管理着功能容器。
 2. Chat初始化API spa.chat.initModule();
 3. Chat的setSliderPosition API sap.chat.setSliderPosition();
 
+###V5.0
+Chapter05 将设计和构建Model的people对象。 Model向Shell和功能模块提供业务逻辑和数据。Model不依赖于用户界面(UI)，它被分离出来负责逻辑和数据管理。 Model自身通过使用Data模块，从Web服务分离出来。
+#### Model做什么
+Model是Shell和所有功能模块访问单页应用的数据和业务逻辑的地方。如果需要登入，我们就调用Model提供的方法。如果想获取人员列表，就从Model获取。如果想获取头信息.....，好了，你懂得！任何希望在功能模块之间共享的或者对应用极为重要的数据和业务，都应该放在Model里面。
+#### Model不做什么
+*Model不需要浏览器。*这就意味着Model不可以假定存在document对象，或者存在像document.location这种浏览器特有的方法。让Shell和功能模块来表示Model的数据是『干净的』MVC。
+这样分离使得自动化测试和回归测试变得简单。
